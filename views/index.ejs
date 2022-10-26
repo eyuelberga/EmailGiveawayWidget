@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        <%= heading ? heading:"Welcome" %>
+    </title>
+    <%- include('./partials/style'); %>
+</head>
+
+<body>
+    <div class="loading-overlay">
+        <div class="spin-icon"></div>
+    </div>
+
+    <div class="container">
+
+        <h1>
+            <%= heading ? heading:"Giveaway" %>
+        </h1>
+        <p>
+            <%= description ? description:"" %>
+        </p>
+
+        <p class='error'>
+            <%= error ? error:"" %>
+        </p>
+
+
+        <form action="/">
+            <input hidden type="text" name="success" value='<%=  success ? success:"" %>'>
+            <input required type="text" name="name" placeholder="Name" value='<%=  name ?
+                    name:"" %>'>
+            <input required type="email" name="email" placeholder="E-mail" value='<%=  email ?
+                    email:"" %>'>
+            <button type="submit">
+                <%= button ? button : 'Get now!' %>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.querySelector("form");
+        const loadingOverlay = document.querySelector('.loading-overlay');
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            loadingOverlay.classList.toggle('is-active');
+            const data = new FormData(e.target);
+            try {
+
+                const response = await fetch('/', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(Object.fromEntries(data))
+                });
+                const content = await response.json();
+                const queryParams = [...Object.entries(content)].map(([key, val]) => `${key}=${encodeURIComponent(val)}`).reduce((prev, current) => prev ? prev + "&" + current : current);
+                if (response.status === 200) {
+                    return window.location.replace(`/success/?${queryParams}`);
+
+                }
+                else {
+
+                    return window.location.replace(`/error/?${queryParams}`);
+
+                }
+            }
+            catch (e) {
+                window.location.replace(`/error/?message=${e.message}`);
+            }
+        })
+    </script>
+</body>
+
+</html>
